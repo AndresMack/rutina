@@ -98,6 +98,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative; /* Added for close button positioning */
         }
         .full-image-display img {
             max-width: 100%;
@@ -162,15 +163,15 @@
             font-size: 1.2rem;
             font-weight: 600;
             color: #72C14A;
-            flex-wrap: wrap; /* Allow wrapping on small screens */
+            flex-wrap: wrap;
         }
         .highlight-button {
             border: 2px solid #00A6ED;
             box-shadow: 0 0 10px rgba(0, 166, 237, 0.5);
         }
-        .series-complete-button { /* Specific style for "Serie Completada" button */
+        .series-complete-button {
             padding: 0.5rem 1rem;
-            background-color: #72C14A; /* Green color from palette */
+            background-color: #72C14A;
             color: white;
             border: none;
             border-radius: 0.3rem;
@@ -179,7 +180,30 @@
             transition: background-color 0.2s ease-in-out;
         }
         .series-complete-button:hover {
-            background-color: #5BA83C; /* Darker green on hover */
+            background-color: #5BA83C;
+        }
+
+        /* Close Button Style */
+        .close-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: #f00; /* Red color for close button */
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10; /* Ensure it's above other content */
+            transition: background-color 0.2s ease-in-out;
+        }
+        .close-button:hover {
+            background-color: #c00;
         }
     </style>
 </head>
@@ -357,7 +381,7 @@
                 </div>
                 <div class="exercise-card">
                     <a href="#" class="exercise-title" onclick="showImage('static/assets/elevaciones-laterales-alterno.jpg', '6-10', 3); return false;">4. Elevaciones Laterales (con mancuernas)</a>
-                    <img src="static/assets/elevaciones-laterales-alterno.jpg" alt="Imagen del ejercicio Elevaciones Laterales (con mancuernas)" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <img src="static/assets/elevaciones-laterales-alterno.jpg" alt="Imagen del ejercicio Elevaciones Laterales (con manmacuerna)" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
                     <p class="exercise-detail">1 Serie al fallo</p>
                     <p class="exercise-detail text-sm">Similar al día 3, enfócate en aislar los deltoides laterales. Rango de repeticiones de 6-10.</p>
                 </div>
@@ -420,6 +444,9 @@
     <!-- Full Image Display Section with Timer -->
     <div id="fullImageDisplay" class="full-image-display hidden">
         <div class="content-wrapper">
+            <!-- Close Button (X) -->
+            <button class="close-button" onclick="hideImage()">X</button>
+
             <img id="enlargedImage" src="" alt="Imagen de Ejercicio Ampliada">
 
             <div class="timer-display-area">
@@ -429,7 +456,7 @@
 
                 <div class="series-info">
                     <p>Serie Actual: <span id="currentSeriesDisplay">1</span> / <span id="maxSeriesDisplay">1</span></p>
-                    <button id="completeSeriesBtn" onclick="completeSeries()" class="series-complete-button">Serie Completada</button>
+                    <button id="completeSeriesBtn" class="series-complete-button" onclick="completeSeries()">Serie Completada</button>
                 </div>
 
                 <p class="mt-4 text-gray-700">Tiempo de Descanso:</p>
@@ -551,12 +578,18 @@
             timerInterval = null;
             isPaused = false; // Reinicia el estado de pausa
             fullImageDisplay.classList.remove('active');
-            fullImageDisplay.addEventListener('transitionend', function handler() {
-                fullImageDisplay.classList.add('hidden');
-                mainContent.classList.remove('hidden');
-                fullImageDisplay.removeEventListener('transitionend', handler);
-            });
+            // Remove the event listener from the previous call if it's still there to prevent multiple calls
+            fullImageDisplay.removeEventListener('transitionend', hideImageTransitionEndHandler);
+            fullImageDisplay.classList.add('hidden'); // Immediately hide it (or let transition handle it)
+            mainContent.classList.remove('hidden'); // Show main content
         }
+
+        // Handler for transitionend event to completely hide the modal
+        function hideImageTransitionEndHandler() {
+            fullImageDisplay.classList.add('hidden');
+            fullImageDisplay.removeEventListener('transitionend', hideImageTransitionEndHandler);
+        }
+
 
         function completeSeries() {
             // Detiene cualquier temporizador de descanso en curso antes de iniciar uno nuevo
