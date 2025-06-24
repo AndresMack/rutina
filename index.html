@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Rutina Heavy Duty Detallada</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 320px;
+            width: 100%;
+            max-width: 450px;
+        }
+        .section-title {
+            color: #2E2532;
+        }
+        .exercise-card {
+            background-color: #FFFFFF;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .exercise-title {
+            font-weight: bold;
+            color: #F58732;
+            text-decoration: none;
+        }
+        .exercise-title:hover {
+            text-decoration: underline;
+            color: #F2BE22;
+        }
+        .exercise-detail {
+            margin-top: 0.5rem;
+            color: #6B7280;
+        }
+        .day-header {
+            background-color: #00A6ED;
+            color: #FFFFFF;
+            font-weight: bold;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .superset-label {
+            font-weight: bold;
+            color: #72C14A;
+            margin-top: 1rem;
+            display: block;
+        }
+        .exercise-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 0.25rem;
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+        .full-image-display {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .full-image-display.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .full-image-display .content-wrapper {
+            background-color: #fff;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            max-width: 95vw;
+            max-height: 95vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .full-image-display img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            object-fit: contain;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .full-image-display .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .full-image-display button {
+            padding: 0.75rem 2rem;
+            background-color: #F58732;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .full-image-display button:hover {
+            background-color: #F2BE22;
+        }
+        .timer-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .timer-controls button {
+            margin-top: 0;
+            flex-grow: 1;
+            min-width: 120px;
+        }
+        .timer-display-area {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #2E2532;
+            width: 100%;
+        }
+        .timer-display-area p {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .timer-display-area h3 {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #00A6ED;
+        }
+        .series-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #72C14A;
+            flex-wrap: wrap; /* Allow wrapping on small screens */
+        }
+        .highlight-button {
+            border: 2px solid #00A6ED;
+            box-shadow: 0 0 10px rgba(0, 166, 237, 0.5);
+        }
+        .series-complete-button { /* Specific style for "Serie Completada" button */
+            padding: 0.5rem 1rem;
+            background-color: #72C14A; /* Green color from palette */
+            color: white;
+            border: none;
+            border-radius: 0.3rem;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .series-complete-button:hover {
+            background-color: #5BA83C; /* Darker green on hover */
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl" id="main-routine-content">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-black section-title mb-2">Tu Rutina Heavy Duty Detallada</h1>
+            <p class="text-lg text-gray-600">Guía completa de entrenamiento y monitoreo para tu recomposición corporal.</p>
+        </header>
+
+        <section id="intro" class="mb-12 bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold section-title mb-4">¡Bienvenido Santiago a tu Plan de Transformación!</h2>
+            <p class="text-gray-700 mb-4">Esta página es tu recurso principal para implementar la rutina Heavy Duty, ajustada a tus objetivos de reducción de grasa abdominal y equilibrio metabólico. Recuerda los principios: una serie al fallo por ejercicio, recuperación adecuada y sobrecarga progresiva. Aunque la rutina con pesas es de baja frecuencia, hemos integrado días de descanso activo para que puedas ir al gimnasio diariamente.</p>
+            <p class="text-gray-700">Presta atención a las instrucciones de cada ejercicio y mantén un registro de tu progreso. ¡La consistencia es la clave!</p>
+        </section>
+
+        <section id="workout-routine" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 section-title">Rutina de Entrenamiento Semanal</h2>
+
+            <!-- Día 1 -->
+            <div class="day-header">Día 1: Pecho & Espalda</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="exercise-card">
+                    <p class="superset-label">Superserie Pecho:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/aperturas-en-maquina-cruce-de-poleas.jpg', '6-10', 3); return false;">1. Aperturas en Máquina / Cruce de Poleas</a>
+                    <img src="static/assets/aperturas-en-maquina-cruce-de-poleas.jpg" alt="Imagen del ejercicio Aperturas en Máquina / Cruce de Poleas" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo (Pre-agotamiento)</p>
+                    <p class="exercise-detail text-sm">Realiza una serie al fallo de un ejercicio de aislamiento de pecho para pre-fatigar el músculo. Enfatiza la contracción máxima.</p>
+                </div>
+                <div class="exercise-card">
+                    <p class="superset-label">Continúa con:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/press-inclinado-en-maquina.jpg', '6-10', 3); return false;">2. Press Inclinado en Máquina (o Mancuernas/Barra)</a>
+                    <img src="static/assets/press-inclinado-en-maquina.jpg" alt="Imagen del ejercicio Press Inclinado en Máquina" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Inmediatamente después de las aperturas (mínimo descanso), pasa a un ejercicio compuesto de pecho. Empuja al fallo, manteniendo el control y enfatizando la fase negativa.</p>
+                </div>
+                <div class="exercise-card">
+                    <p class="superset-label">Superserie Espalda:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/pullover-con-mancuerna.jpg', '6-10', 3); return false;">3. Pullover con Mancuerna</a>
+                    <img src="static/assets/pullover-con-mancuerna.jpg" alt="Imagen del ejercicio Pullover con Mancuerna" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo (Pre-agotamiento)</p>
+                    <p class="exercise-detail text-sm">Concéntrate en sentir el estiramiento y la contracción en tus dorsales. Realiza al fallo, con movimiento controlado.</p>
+                </div>
+                <div class="exercise-card">
+                    <p class="superset-label">Continúa con:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/jalon-al-pecho.jpg', '6-10', 3); return false;">4. Jalón al Pecho (Agarre supino o neutro)</a>
+                    <img src="static/assets/jalon-al-pecho.jpg" alt="Imagen del ejercicio Jalón al Pecho" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Sin descanso desde el pullover, ejecuta este jalón concentrándote en tirar con los dorsales. Mantén la forma estricta.</p>
+                </div>
+                <div class="exercise-card md:col-span-2">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/remo-en-maquina-o-con-barra-t.jpg', '6-10', 3); return false;">5. Remo en Máquina o con Barra T</a>
+                    <img src="static/assets/remo-en-maquina-o-con-barra-t.jpg" alt="Imagen del ejercicio Remo en Máquina o con Barra T" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Concéntrate en la contracción de tu espalda alta. Puedes usar un agarre cerrado o abierto. Controla el peso en ambas fases del movimiento.</p>
+                </div>
+                 <div class="exercise-card md:col-span-2">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/peso-muerto.jpg', '6-10', 3); return false;">6. Peso Muerto (énfasis en la forma)</a>
+                    <img src="static/assets/peso-muerto.jpg" alt="Imagen del ejercicio Peso Muerto" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Este ejercicio es demandante. Asegúrate de calentar adecuadamente. Concéntrate en la forma perfecta para proteger tu espalda y maximizar el trabajo de piernas, glúteos y lumbares. No sacrifiques la forma por el peso.</p>
+                </div>
+            </div>
+
+            <!-- Día 2 -->
+            <div class="day-header mt-8">Día 2: Piernas & Abdominales</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="exercise-card">
+                    <p class="superset-label">Superserie Cuádriceps:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/extensiones-de-pierna.jpg', '12-20', 3); return false;">1. Extensiones de Pierna</a>
+                    <img src="static/assets/extensiones-de-pierna.jpg" alt="Imagen del ejercicio Extensiones de Pierna" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo (Pre-agotamiento)</p>
+                    <p class="exercise-detail text-sm">Realiza al fallo enfatizando la contracción máxima del cuádriceps en la parte superior del movimiento. Usa un peso que te permita sentir la quemazón.</p>
+                </div>
+                <div class="exercise-card">
+                    <p class="superset-label">Continúa con:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/prensa-de-piernas-alterno.jpg', '12-20', 3); return false;">2. Prensa de Piernas (o Sentadilla en Máquina/Hack Squat)</a>
+                    <img src="static/assets/prensa-de-piernas-alterno.jpg" alt="Imagen del ejercicio Prensa de Piernas" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Inmediatamente después de las extensiones, pasa a la prensa. Empuja con fuerza usando los cuádriceps hasta el fallo. Dado que no quieres sentadilla con barra libre, esta es una excelente alternativa.</p>
+                </div>
+                <div class="exercise-card md:col-span-2">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/curl-femoral.jpg', '12-20', 3); return false;">3. Curl Femoral (Sentado o Tumbado)</a>
+                    <img src="static/assets/curl-femoral.jpg" alt="Imagen del ejercicio Curl Femoral" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Concéntrate en contraer los isquiotibiales. Mantén el control durante todo el movimiento, especialmente en la fase negativa. Tu objetivo es sentir que tus isquiotibiales son los que trabajan, no la espalda baja.</p>
+                </div>
+                <div class="exercise-card md:col-span-2">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/elevaciones-de-gemelos.jpg', '12-20', 3); return false;">4. Elevaciones de Gemelos (Sentado o de Pie)</a>
+                    <img src="static/assets/elevaciones-de-gemelos.jpg" alt="Imagen del ejercicio Elevaciones de Gemelos" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Realiza con un rango de movimiento completo, estirando al máximo en la parte baja y contrayendo fuerte en la parte alta. Puedes hacer una pausa en la contracción máxima.</p>
+                </div>
+                <div class="exercise-card">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/elevaciones-de-piernas-colgado.jpg', '12-20', 3); return false;">5. Elevaciones de Piernas (colgado)</a>
+                    <img src="static/assets/elevaciones-de-piernas-colgado.jpg" alt="Imagen del ejercicio Elevaciones de Piernas (colgado)" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Concéntrate en usar tus abdominales inferiores para levantar las piernas. Evita balancearte. Si colgar es demasiado, hazlo en el suelo o en una máquina de elevación de piernas.</p>
+                </div>
+                <div class="exercise-card">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/crunches-con-peso.jpg', '12-20', 3); return false;">6. Crunches con peso</a>
+                    <img src="static/assets/crunches-con-peso.jpg" alt="Imagen del ejercicio Crunches con peso" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Realiza el movimiento de forma lenta y controlada, enfocándote en la contracción de tus abdominales. Puedes usar un disco en el pecho para añadir resistencia.</p>
+                </div>
+            </div>
+
+            <!-- Día 3 -->
+            <div class="day-header mt-8">Día 3: Hombros & Brazos</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="exercise-card">
+                    <p class="superset-label">Superserie Hombros:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/elevaciones-laterales-alterno.jpg', '6-10', 3); return false;">1. Elevaciones Laterales</a>
+                    <img src="static/assets/elevaciones-laterales-alterno.jpg" alt="Imagen del ejercicio Elevaciones Laterales" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Eleva las mancuernas lateralmente, con una ligera flexión en los codos, hasta la altura de los hombros. Enfócate en el deltoides medio y evita el impulso.</p>
+                </div>
+                <div class="exercise-card">
+                    <p class="superset-label">Continúa con:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/press-de-hombros-en-maquina.jpg', '6-10', 3); return false;">2. Press de Hombros en Máquina</a>
+                    <img src="static/assets/press-de-hombros-en-maquina.jpg" alt="Imagen del ejercicio Press de Hombros en Máquina" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Inmediatamente después de las elevaciones laterales, presiona la máquina hacia arriba. Concéntrate en la contracción de los deltoides frontales y medios. Mantén el control durante todo el movimiento.</p>
+                </div>
+                <div class="exercise-card md:col-span-2">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/pajaros-deltoides-posterior.jpg', '6-10', 3); return false;">3. Pájaros (Deltoides posterior) en máquina o con mancuernas</a>
+                    <img src="static/assets/pajaros-deltoides-posterior.jpg" alt="Imagen del ejercicio Pájaros (Deltoides posterior)" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Concéntrate en aislar el deltoides posterior. Puedes hacerlo en una máquina específica o con mancuernas, inclinando el tronco hacia adelante. Aprieta los omóplatos al final del movimiento.</p>
+                </div>
+                <div class="exercise-card">
+                    <p class="superset-label">Superserie Tríceps:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/extensiones-en-polea.jpg', '6-10', 3); return false;">4. Extensiones en Polea (agarre de cuerda o barra recta)</a>
+                    <img src="static/assets/extensiones-en-polea.jpg" alt="Imagen del ejercicio Extensiones en Polea" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo (Pre-agotamiento)</p>
+                    <p class="exercise-detail text-sm">Extiende el brazo completamente, sintiendo la contracción en el tríceps. Mantén los codos pegados al cuerpo.</p>
+                </div>
+                <div class="exercise-card">
+                    <p class="superset-label">Continúa con:</p>
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/fondos-en-maquina-o-paralelas-asistidas.jpg', '6-10', 3); return false;">5. Fondos en Máquina o paralelas asistidas</a>
+                    <img src="static/assets/fondos-en-maquina-o-paralelas-asistidas.jpg" alt="Imagen del ejercicio Fondos en Máquina o paralelas asistidas" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Inmediatamente después de las extensiones, baja tu cuerpo de forma controlada hasta que tus hombros estén por debajo de tus codos y luego empuja hacia arriba. Si usas paralelas, puedes usar una máquina de asistencia.</p>
+                </div>
+                 <div class="exercise-card md:col-span-2">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/curl-con-barra.jpg', '6-10', 3); return false;">6. Curl con Barra (Barra Recta o Z)</a>
+                    <img src="static/assets/curl-con-barra.jpg" alt="Imagen del ejercicio Curl con Barra" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Concéntrate en la contracción del bíceps. Eleva la barra de forma controlada y baja lentamente. Evita balancear el cuerpo para usar el impulso.</p>
+                </div>
+            </div>
+
+            <!-- Día 4 -->
+            <div class="day-header mt-8">Día 4: Enfoque Alterno / Full Body</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="exercise-card">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/prensa-de-piernas-alterno.jpg', '12-20', 3); return false;">1. Prensa de Piernas</a>
+                    <img src="static/assets/prensa-de-piernas-alterno.jpg" alt="Imagen del ejercicio Prensa de Piernas" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Enfócate en un movimiento controlado, empujando con los talones y sintiendo la contracción en cuádriceps y glúteos. Rango de repeticiones de 12-20.</p>
+                </div>
+                <div class="exercise-card">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/remo-con-mancuerna-a-una-mano.jpg', '6-10', 3); return false;">2. Remo con Mancuerna (a una mano)</a>
+                    <img src="static/assets/remo-con-mancuerna-a-una-mano.jpg" alt="Imagen del ejercicio Remo con Mancuerna (a una mano)" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo por lado</p>
+                    <p class="exercise-detail text-sm">Apoya una rodilla y una mano en un banco. Tira de la mancuerna hacia tu cintura, contrayendo la espalda. Rango de repeticiones de 6-10.</p>
+                </div>
+                <div class="exercise-card">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/press-de-banca-plano-con-mancuernas.jpg', '6-10', 3); return false;">3. Press de Banca Plano con Mancuernas</a>
+                    <img src="static/assets/press-de-banca-plano-con-mancuernas.jpg" alt="Imagen del ejercicio Press de Banca Plano con Mancuernas" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Baja las mancuernas lentamente hasta la altura del pecho y empuja hacia arriba. Concéntrate en la contracción del pecho. Rango de repeticiones de 6-10.</p>
+                </div>
+                <div class="exercise-card">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/elevaciones-laterales-alterno.jpg', '6-10', 3); return false;">4. Elevaciones Laterales (con mancuernas)</a>
+                    <img src="static/assets/elevaciones-laterales-alterno.jpg" alt="Imagen del ejercicio Elevaciones Laterales (con mancuernas)" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Similar al día 3, enfócate en aislar los deltoides laterales. Rango de repeticiones de 6-10.</p>
+                </div>
+                <div class="exercise-card">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/curl-de-biceps-en-polea.jpg', '6-10', 3); return false;">5. Curl de Bíceps en Polea (con barra recta o EZ)</a>
+                    <img src="static/assets/curl-de-biceps-en-polea.jpg" alt="Imagen del ejercicio Curl de Bíceps en Polea" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">La polea proporciona tensión constante. Realiza el movimiento completo y concéntrate en la contracción del bíceps. Rango de repeticiones de 6-10.</p>
+                </div>
+                <div class="exercise-card">
+                    <a href="#" class="exercise-title" onclick="showImage('static/assets/extensiones-de-triceps.jpg', '6-10', 3); return false;">6. Extensiones de Tríceps (overhead con mancuerna o barra)</a>
+                    <img src="static/assets/extensiones-de-triceps.jpg" alt="Imagen del ejercicio Extensiones de Tríceps (overhead con mancuerna o barra)" class="exercise-image" onerror="this.onerror=null;this.src='https://placehold.co/150x100/CCCCCC/000000?text=Imagen+No+Disp.'">
+                    <p class="exercise-detail">1 Serie al fallo</p>
+                    <p class="exercise-detail text-sm">Extiende el peso por encima de la cabeza, sintiendo el estiramiento y la contracción en tus tríceps. Rango de repeticiones de 6-10.</p>
+                </div>
+            </div>
+
+            <div class="mt-8 text-center bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-lg">
+                <p class="font-bold">Nota Importante:</p>
+                <p>Para todos los ejercicios, realiza 2-3 series de calentamiento con pesos ligeros, terminando 1-2 repeticiones antes del fallo. La serie de trabajo principal debe ser la única llevada al fallo muscular absoluto.</p>
+                <p class="font-bold mt-4">Días de Descanso Activo:</p>
+                <p>Los 3 días restantes (después de tus 4 días de pesas), realiza 30-45 minutos de cardio de baja intensidad (caminar rápido, ciclismo suave, elíptica) o actividades de recuperación como estiramientos y foam rolling. Esto facilita la recuperación, quema calorías y te permite mantener la rutina diaria en el gimnasio sin sobreentrenar.</p>
+            </div>
+        </section>
+
+        <section id="visualizaciones" class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8 section-title">Visualizando Tu Estrategia</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-center mb-4 section-title">Distribución de Macronutrientes para Pérdida de Grasa y Metabolismo Equilibrado</h3>
+                    <p class="text-center text-gray-600 mb-4 text-sm">Este gráfico de donut muestra la proporción de macronutrientes ajustada para tus objetivos: un mayor porcentaje de proteínas (35%) para maximizar la saciedad y proteger la masa muscular durante la pérdida de peso, carbohidratos moderados (40%) para energía sostenible sin picos de azúcar, y grasas saludables (25%) esenciales para la función hormonal y un metabolismo estable. Esta distribución te ayudará a manejar el "metabolismo excitado" al proveer un suministro constante de energía.</p>
+                    <div class="chart-container">
+                        <canvas id="macroChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-center mb-4 section-title">Rango de Repeticiones Objetivo</h3>
+                    <p class="text-center text-gray-600 mb-4 text-sm">Estos gráficos de barras te muestran el rango de repeticiones en el que debes alcanzar el fallo muscular para los diferentes grupos musculares, maximizando el estímulo de crecimiento. Para la parte superior del cuerpo (pecho, espalda, hombros, brazos), el objetivo es de 6-10 repeticiones. Para piernas y abdominales, el rango es más alto, de 12-20 repeticiones. El "mínimo de reps" indica el punto a partir del cual, si superas, deberías considerar aumentar el peso para mantener la intensidad dentro del rango objetivo y garantizar la sobrecarga progresiva.</p>
+                    <div class="chart-container">
+                        <canvas id="repRangeChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-lg p-6 md:col-span-2">
+                    <h3 class="text-xl font-bold text-center mb-4 section-title">La Clave del Éxito: Sobrecarga Progresiva</h3>
+                     <p class="text-center text-gray-600 mb-4 text-sm">Este gráfico de línea simula tu progreso en un ejercicio como la Prensa de Piernas a lo largo de seis semanas. La sobrecarga progresiva es fundamental: si te haces más fuerte, te harás más grande. Cada sesión, el objetivo es levantar un poco más de peso, o realizar una o dos repeticiones más con el mismo peso, siempre manteniendo la forma perfecta y llegando al fallo. Aunque estés en un déficit calórico, es crucial seguir intentando progresar en la fuerza para enviar la señal de crecimiento muscular. Este gráfico te ayuda a visualizar cómo un aumento gradual pero constante en el peso levantado (o repeticiones) es el verdadero motor de tu crecimiento muscular y te muestra que el progreso no siempre es lineal, pero debe ser ascendente.</p>
+                    <div class="chart-container h-80">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center mt-12 pt-8 border-t border-gray-300">
+            <p class="text-gray-600">Recuerda: la consistencia es más importante que la perfección. Registra tu progreso, escucha a tu cuerpo y adáptate. ¡El crecimiento y la definición están garantizados si aplicas estos principios con inteligencia y esfuerzo!</p>
+            <p class="text-sm text-gray-400 mt-4">Página web generada basada en los principios de Heavy Duty de Mike Mentzer. Consulta a un profesional antes de iniciar cualquier programa de entrenamiento o nutrición.</p>
+        </footer>
+
+    </div>
+
+    <!-- Full Image Display Section with Timer -->
+    <div id="fullImageDisplay" class="full-image-display hidden">
+        <div class="content-wrapper">
+            <img id="enlargedImage" src="" alt="Imagen de Ejercicio Ampliada">
+
+            <div class="timer-display-area">
+                <p>Tiempo de ejecución sugerido por repetición: <span class="font-bold text-[#F58732]">2-3 segundos (controlado)</span></p>
+                <p>Repeticiones Sugeridas: <span class="font-bold text-[#F58732]" id="suggestedRepsDisplay">N/A</span></p>
+                <p>Descanso sugerido entre series: <span class="font-bold text-[#F58732]">90 segundos</span></p>
+
+                <div class="series-info">
+                    <p>Serie Actual: <span id="currentSeriesDisplay">1</span> / <span id="maxSeriesDisplay">1</span></p>
+                    <button id="completeSeriesBtn" onclick="completeSeries()" class="series-complete-button">Serie Completada</button>
+                </div>
+
+                <p class="mt-4 text-gray-700">Tiempo de Descanso:</p>
+                <h3 id="countdownTimer">00:00</h3>
+
+                <div class="timer-controls">
+                    <button id="startRestBtn" onclick="startRest()">Iniciar Temporizador</button>
+                    <button id="pauseRestBtn" onclick="pauseRest()">Pausar Temporizador</button>
+                    <button id="resetTimerBtn" onclick="resetTimer()">Reiniciar Temporizador</button>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button id="finishExerciseBtn" onclick="finishExercise()">Ejercicio Finalizado</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales para el estado del temporizador y las series
+        let currentSeries = 1;
+        let maxSeriesForCurrentExercise = 1; // Default
+        let restCountdown = 90; // Tiempo de descanso predeterminado en segundos
+        let timerInterval = null;
+        let isPaused = false;
+
+        const SUGGESTED_REST_TIME = 90; // Segundos
+
+        // Elementos del DOM
+        const mainContent = document.getElementById('main-routine-content');
+        const fullImageDisplay = document.getElementById('fullImageDisplay');
+        const enlargedImage = document.getElementById('enlargedImage');
+        const suggestedRepsDisplay = document.getElementById('suggestedRepsDisplay');
+        const currentSeriesDisplay = document.getElementById('currentSeriesDisplay');
+        const maxSeriesDisplay = document.getElementById('maxSeriesDisplay');
+        const countdownTimerDisplay = document.getElementById('countdownTimer');
+        const completeSeriesBtn = document.getElementById('completeSeriesBtn');
+        const finishExerciseBtn = document.getElementById('finishExerciseBtn');
+        const startRestBtn = document.getElementById('startRestBtn');
+        const pauseRestBtn = document.getElementById('pauseRestBtn');
+        const resetTimerBtn = document.getElementById('resetTimerBtn');
+
+
+        // Función para actualizar la visualización del temporizador
+        function updateTimerDisplay() {
+            const minutes = Math.floor(restCountdown / 60);
+            const seconds = restCountdown % 60;
+            countdownTimerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Funciones de control del temporizador
+        function startRest() {
+            if (timerInterval) clearInterval(timerInterval); // Limpia cualquier temporizador existente
+            isPaused = false;
+            // Asegura que el temporizador se reinicie al tiempo sugerido si ya ha terminado o está en pausa y el usuario lo inicia manualmente
+            if (restCountdown <= 0 || restCountdown === SUGGESTED_REST_TIME) {
+                restCountdown = SUGGESTED_REST_TIME;
+            }
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    restCountdown--;
+                    if (restCountdown < 0) {
+                        clearInterval(timerInterval);
+                        countdownTimerDisplay.textContent = "¡Descanso Terminado!";
+                        // Aquí no incrementamos currentSeries automáticamente, el usuario lo hace con "Serie Completada"
+                    } else {
+                        updateTimerDisplay();
+                    }
+                }
+            }, 1000);
+        }
+
+        function pauseRest() {
+            isPaused = !isPaused;
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isPaused = false;
+            restCountdown = SUGGESTED_REST_TIME; // Reinicia el tiempo de descanso
+            currentSeries = 1; // Reinicia la serie actual
+            updateDisplays(); // Actualiza la visualización de la serie
+            updateTimerDisplay(); // Actualiza el temporizador a 00:00 o SUGGESTED_REST_TIME
+            countdownTimerDisplay.textContent = "00:00"; // Establece explícitamente a 00:00 para claridad visual
+            
+            // Habilita los botones si estaban deshabilitados
+            completeSeriesBtn.disabled = false;
+            completeSeriesBtn.classList.remove('highlight-button');
+            finishExerciseBtn.classList.remove('highlight-button');
+        }
+
+        // Actualiza las visualizaciones dinámicas (Serie Actual)
+        function updateDisplays() {
+            currentSeriesDisplay.textContent = currentSeries;
+            maxSeriesDisplay.textContent = maxSeriesForCurrentExercise;
+        }
+
+        // Funciones para mostrar/ocultar la imagen
+        function showImage(imageSrc, suggestedReps, maxSeries) {
+            enlargedImage.src = imageSrc;
+            suggestedRepsDisplay.textContent = suggestedReps; // Establece las repeticiones sugeridas
+            
+            maxSeriesForCurrentExercise = maxSeries; // Establece las series máximas para este ejercicio
+            resetTimer(); // Reinicia el temporizador y la serie a 1/1
+            
+            mainContent.classList.add('hidden');
+            fullImageDisplay.classList.add('active');
+            fullImageDisplay.classList.remove('hidden');
+
+            completeSeriesBtn.disabled = false; // Asegura que el botón "Serie Completada" esté habilitado al abrir
+            finishExerciseBtn.classList.remove('highlight-button'); // Remueve el resaltado de "Ejercicio Finalizado"
+        }
+
+        function hideImage() {
+            clearInterval(timerInterval); // Detiene el temporizador al ocultar
+            timerInterval = null;
+            isPaused = false; // Reinicia el estado de pausa
+            fullImageDisplay.classList.remove('active');
+            fullImageDisplay.addEventListener('transitionend', function handler() {
+                fullImageDisplay.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                fullImageDisplay.removeEventListener('transitionend', handler);
+            });
+        }
+
+        function completeSeries() {
+            // Detiene cualquier temporizador de descanso en curso antes de iniciar uno nuevo
+            clearInterval(timerInterval); 
+            timerInterval = null;
+            isPaused = false;
+
+            if (currentSeries < maxSeriesForCurrentExercise) {
+                currentSeries++; // Incrementa la serie
+                updateDisplays(); // Actualiza la visualización
+                startRest(); // Inicia el descanso para la siguiente serie
+            } else if (currentSeries === maxSeriesForCurrentExercise) {
+                // Si es la última serie, inicia el descanso y luego deshabilita el botón de "Serie Completada"
+                startRest(); 
+                completeSeriesBtn.disabled = true;
+                completeSeriesBtn.classList.remove('highlight-button'); // Asegura que no esté resaltado si se desactiva
+                finishExerciseBtn.classList.add('highlight-button'); // Resalta el botón de Ejercicio Finalizado
+            }
+        }
+
+        function finishExercise() {
+            hideImage(); // Simplemente regresa a la rutina principal
+        }
+
+
+        // Callbacks y funciones específicas de Chart.js
+        const tooltipTitleCallback = (tooltipItems) => {
+            const item = tooltipItems[0];
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            }
+            return label;
+        };
+
+        const wrapLabels = (label) => {
+            const max = 16;
+            if (label.length <= max) return label;
+            const words = label.split(' ');
+            let lines = [];
+            let currentLine = '';
+            words.forEach(word => {
+                if ((currentLine + ' ' + word).trim().length > max) {
+                    lines.push(currentLine.trim());
+                    currentLine = word;
+                } else {
+                    currentLine += (currentLine === '' ? '' : ' ') + word;
+                }
+            });
+            lines.push(currentLine.trim());
+            return lines;
+        };
+
+        const chartColors = {
+            blue: '#00A6ED',
+            green: '#72C14A',
+            orange: '#F58732',
+            yellow: '#F2BE22',
+            dark: '#2E2532',
+            gray: '#6B7280'
+        };
+
+        const macroCtx = document.getElementById('macroChart').getContext('2d');
+        new Chart(macroCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Carbohidratos', 'Proteínas', 'Grasas'],
+                datasets: [{
+                    label: 'Distribución de Macros',
+                    data: [40, 35, 25],
+                    backgroundColor: [chartColors.blue, chartColors.green, chartColors.orange],
+                    borderColor: '#FFFFFF',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: tooltipTitleCallback
+                        }
+                    }
+                }
+            }
+        });
+
+        const repRangeCtx = document.getElementById('repRangeChart').getContext('2d');
+        new Chart(repRangeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Parte Superior (Pecho, Espalda, Hombros, Brazos)', 'Piernas y Abdominales'],
+                datasets: [{
+                    label: 'Reps al fallo (máximo)',
+                    data: [10, 20],
+                    backgroundColor: [chartColors.orange, chartColors.green],
+                    borderColor: [chartColors.orange, chartColors.green],
+                    borderWidth: 1,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Mínimo de Reps',
+                    data: [6, 12],
+                    backgroundColor: [chartColors.blue, chartColors.blue],
+                    borderColor: [chartColors.blue, chartColors.blue],
+                    borderWidth: 1,
+                    yAxisID: 'y'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Número de Repeticiones' }
+                    },
+                    x: {
+                        ticks: {
+                           callback: function(value, index, values) {
+                                let label = this.getLabelForValue(value);
+                                return wrapLabels(label);
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            title: tooltipTitleCallback
+                        }
+                    }
+                }
+            }
+        });
+
+        const progressCtx = document.getElementById('progressChart').getContext('2d');
+        new Chart(progressCtx, {
+            type: 'line',
+            data: {
+                labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4', 'Semana 5', 'Semana 6'],
+                datasets: [{
+                    label: 'Peso Levantado (kg) en Prensa',
+                    data: [180, 185, 190, 192.5, 197.5, 200],
+                    borderColor: chartColors.green,
+                    backgroundColor: 'rgba(114, 193, 74, 0.1)',
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: 'Peso (kg)' }
+                    },
+                    x: {
+                        title: { display: true, text: 'Tiempo' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: tooltipTitleCallback
+                        }
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
